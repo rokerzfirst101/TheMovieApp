@@ -54,8 +54,6 @@ fun HomeMovieListItem(movie: Movie, modifier: Modifier = Modifier) {
             Row {
                 Chip(text = movie.releaseDate.split("-")[0])
                 Chip(text = "13+")
-            }
-            Row {
                 Chip(text = movie.voteAverage, icon = R.drawable.ic_star, color = GoldColor)
             }
         }

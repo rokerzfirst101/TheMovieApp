@@ -1,11 +1,15 @@
 package com.example.themovieapp.di.module
 
+import android.content.Context
+import androidx.room.Room
 import com.example.themovieapp.data.api.ApiHelper
 import com.example.themovieapp.data.api.ApiHelperImpl
 import com.example.themovieapp.data.api.ApiService
+import com.example.themovieapp.data.db.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

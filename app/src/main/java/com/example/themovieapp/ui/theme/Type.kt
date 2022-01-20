@@ -1,5 +1,6 @@
 package com.example.themovieapp.ui.theme
 
+import androidx.compose.material.Text
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -55,6 +56,12 @@ val Typography = Typography(
         fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 10.sp,
+        color = BTextColor
+    ),
+    subtitle1 = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
         color = BTextColor
     )
 )

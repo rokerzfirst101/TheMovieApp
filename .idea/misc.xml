@@ -5,6 +5,9 @@
       <map>
         <entry key="..\:/Users/roker/AndroidStudioProjects/TheMovieApp/app/src/main/res/drawable/ic_search.xml" value="0.21875" />
         <entry key="..\:/Users/roker/AndroidStudioProjects/TheMovieApp/app/src/main/res/drawable/ic_star.xml" value="0.21875" />
+        <entry key="app/src/main/res/drawable/ic_back.xml" value="0.2935185185185185" />
+        <entry key="app/src/main/res/drawable/ic_heart.xml" value="0.20256410256410257" />
+        <entry key="app/src/main/res/drawable/ic_heart_outline.xml" value="0.20256410256410257" />
       </map>
     </option>
   </component>

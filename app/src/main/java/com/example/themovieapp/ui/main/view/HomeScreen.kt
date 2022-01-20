@@ -6,69 +6,87 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.themovieapp.R
+import com.example.themovieapp.ui.main.contracts.HomeScreenContract
 import com.example.themovieapp.ui.theme.*
 import com.example.themovieapp.ui.main.view.components.HomeMovieListItem
-import com.example.themovieapp.ui.main.viewmodel.HomeViewModel
+import com.example.themovieapp.ui.main.viewmodel.LAUNCH_LISTEN_FOR_EFFECTS
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import java.net.URLEncoder
 
+const val TAG = "HomeScreen"
+
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel, navController: NavHostController) {
+fun HomeScreen(
+    state: HomeScreenContract.State,
+    effectFlow: Flow<HomeScreenContract.Effect>?,
+    onEventSent: (event: HomeScreenContract.Event) -> Unit,
+    onNavigationRequested: (navigationEffect: HomeScreenContract.Effect.Navigation) -> Unit
+) {
 
-    val data by homeViewModel.movies.observeAsState()
-    val movieList = data?.data?.results ?: emptyList()
-
-    val searchValue = remember {
-        mutableStateOf(TextFieldValue())
+    LaunchedEffect(LAUNCH_LISTEN_FOR_EFFECTS) {
+        effectFlow?.onEach { effect ->
+            when (effect) {
+                is HomeScreenContract.Effect.ToastDataWasLoaded -> {
+                    Log.d(TAG, "HomeScreen: Data Loaded!") }
+                is HomeScreenContract.Effect.Navigation.ToMovieDetails -> {
+                    onNavigationRequested(effect)
+                }
+            }
+        }?.collect()
     }
 
-    TheMovieAppTheme {
-        Box(
-            modifier = Modifier
-                .background(BackgroundColor)
-                .fillMaxSize()
-        ) {
-            Column {
-                HeaderSection("Rakshit")
-                SearchBar(searchValue, homeViewModel)
-                if (searchValue.value.text == "") {
-                    CategorySection(homeViewModel, listOf(
-                        "Popular",
-                        "Latest",
-                        "Now Playing",
-                        "Top Rated",
-                        "Upcoming"
-                    ))
-                } else {
-                    SearchSection(searchValue.value.text)
-                }
-                LazyColumn {
-                    items(movieList.size) {
-                        HomeMovieListItem(
-                            movie = movieList[it],
-                            modifier = Modifier.clickable {
-                                val string = Gson().toJson(movieList[it])
-                                val newString = URLEncoder.encode(string, "utf-8")
-                                navController.navigate("movieDetails/movie=$newString")
-                            }
-                        )
+    Box(
+        modifier = Modifier
+            .background(BackgroundColor)
+            .fillMaxSize()
+    ) {
+        Column {
+            HeaderSection("Rakshit")
+            SearchBar(state.searchText, onEventSent)
+            if (state.searchText == "") {
+                CategorySection(state, onEventSent, listOf(
+                    "popular",
+                    "now_playing",
+                    "top_rated",
+                    "upcoming",
+                    "favourites"
+                ))
+            } else {
+                SearchSection(state.searchText)
+            }
+            LazyColumn {
+                itemsIndexed(state.movies) { index, item ->
+                    if (index == state.movies.lastIndex) {
+                        onEventSent(HomeScreenContract.Event.GetNextPage)
                     }
+                    HomeMovieListItem(
+                        movie = item,
+                        modifier = Modifier.clickable {
+//                            item.isLiked = homeViewModel.isMovieLiked(item)
+                            val string = Gson().toJson(item)
+                            val newString = URLEncoder.encode(string, "utf-8")
+                            onEventSent(HomeScreenContract.Event.CategorySelection(newString))
+                        }
+                    )
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -86,10 +104,7 @@ fun SearchSection(searchText: String) {
 }
 
 @Composable
-fun CategorySection(homeViewModel: HomeViewModel, chips: List<String>) {
-    var selectedChipIndex by remember {
-        mutableStateOf(0)
-    }
+fun CategorySection(state: HomeScreenContract.State, onEventSent: (event: HomeScreenContract.Event) -> Unit, chips: List<String>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -108,18 +123,17 @@ fun CategorySection(homeViewModel: HomeViewModel, chips: List<String>) {
                     modifier = Modifier
                         .padding(start = 7.5.dp, end = 7.5.dp)
                         .clickable {
-                            selectedChipIndex = it
-                            homeViewModel.changeSelectedCategory(it)
+                            onEventSent(HomeScreenContract.Event.CategorySelection(chips[it]))
                         }
                         .clip(RoundedCornerShape(10.dp))
                         .background(
-                            if (selectedChipIndex == it) ActiveButtonColor
+                            if (state.selectedCategory == chips[it]) ActiveButtonColor
                             else SurfaceColor
                         )
                         .padding(15.dp)
                 ) {
                     Text(
-                        text = chips[it],
+                        text = formatString(chips[it]),
                         color = HTextColor
                     )
                 }
@@ -128,8 +142,19 @@ fun CategorySection(homeViewModel: HomeViewModel, chips: List<String>) {
     }
 }
 
+fun formatString(s: String): String {
+    val words = s.split("_")
+    var newStr = ""
+    words.forEach { word ->
+        newStr += word.replaceFirstChar {
+            it.uppercase()
+        } + " "
+    }
+    return newStr.trimEnd()
+}
+
 @Composable
-fun SearchBar(searchText: MutableState<TextFieldValue>, homeViewModel: HomeViewModel) {
+fun SearchBar(searchText: String, onEventSent: (event: HomeScreenContract.Event) -> Unit,) {
     Box(
         modifier = Modifier
             .padding(20.dp)
@@ -137,7 +162,7 @@ fun SearchBar(searchText: MutableState<TextFieldValue>, homeViewModel: HomeViewM
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
-            value = searchText.value,
+            value = searchText,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = SurfaceColor,
                 cursorColor = HTextColor,
@@ -145,8 +170,7 @@ fun SearchBar(searchText: MutableState<TextFieldValue>, homeViewModel: HomeViewM
                 unfocusedIndicatorColor = Color.Transparent
             ),
             onValueChange = {
-                searchText.value = it
-                homeViewModel.searchMovies(it.text)
+                onEventSent(HomeScreenContract.Event.Search(it))
             },
             shape = RoundedCornerShape(10.dp),
             placeholder = { Text(text = "Search")},
