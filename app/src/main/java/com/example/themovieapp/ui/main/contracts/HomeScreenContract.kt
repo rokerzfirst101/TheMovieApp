@@ -1,9 +1,9 @@
 package com.example.themovieapp.ui.main.contracts
 
 import com.example.themovieapp.data.model.Movie
-import com.example.themovieapp.utils.ViewEvent
-import com.example.themovieapp.utils.ViewSideEffect
-import com.example.themovieapp.utils.ViewState
+import com.example.themovieapp.ui.main.viewmodel.ViewEvent
+import com.example.themovieapp.ui.main.viewmodel.ViewSideEffect
+import com.example.themovieapp.ui.main.viewmodel.ViewState
 
 class HomeScreenContract {
 

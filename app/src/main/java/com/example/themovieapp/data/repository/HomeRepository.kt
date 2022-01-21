@@ -1,7 +1,9 @@
 package com.example.themovieapp.data.repository
 
 import com.example.themovieapp.data.api.ApiHelper
+import com.example.themovieapp.data.db.dao.MovieDao
 import com.example.themovieapp.data.model.GetMoviesResponse
+import com.example.themovieapp.data.model.Movie
 import com.example.themovieapp.utils.BaseApiResponse
 import com.example.themovieapp.utils.NetworkResult
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +13,8 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class HomeRepository @Inject constructor(
-    private val apiHelper: ApiHelper
+    private val apiHelper: ApiHelper,
+    private val movieDao: MovieDao
 ) : BaseApiResponse() {
 
     suspend fun getMoviesByCategory(
@@ -28,6 +31,12 @@ class HomeRepository @Inject constructor(
     ) : Flow<NetworkResult<GetMoviesResponse>> {
         return flow<NetworkResult<GetMoviesResponse>> {
             emit(safeApiCall { apiHelper.getMovieBySearch(searchText) })
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun getFavouriteMovies() : Flow<List<Movie>> {
+        return flow {
+            emit(movieDao.getFavourites())
         }.flowOn(Dispatchers.IO)
     }
 }

@@ -14,18 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
 import com.example.themovieapp.R
 import com.example.themovieapp.ui.main.contracts.HomeScreenContract
 import com.example.themovieapp.ui.theme.*
 import com.example.themovieapp.ui.main.view.components.HomeMovieListItem
 import com.example.themovieapp.ui.main.viewmodel.LAUNCH_LISTEN_FOR_EFFECTS
-import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import java.net.URLEncoder
 
 const val TAG = "HomeScreen"
 
@@ -76,10 +73,7 @@ fun HomeScreen(
                     HomeMovieListItem(
                         movie = item,
                         modifier = Modifier.clickable {
-//                            item.isLiked = homeViewModel.isMovieLiked(item)
-                            val string = Gson().toJson(item)
-                            val newString = URLEncoder.encode(string, "utf-8")
-                            onEventSent(HomeScreenContract.Event.CategorySelection(newString))
+                            onEventSent(HomeScreenContract.Event.MovieSelection(item))
                         }
                     )
                 }

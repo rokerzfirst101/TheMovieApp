@@ -35,5 +35,4 @@ data class Movie(
     @ColumnInfo(name = "backdropPath")
     @SerializedName("backdrop_path")
     val backdropPath: String,
-    var isLiked: Boolean
 )

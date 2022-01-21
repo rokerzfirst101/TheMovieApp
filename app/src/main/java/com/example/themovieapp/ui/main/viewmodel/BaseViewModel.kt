@@ -5,14 +5,14 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.themovieapp.utils.ViewEvent
-import com.example.themovieapp.utils.ViewSideEffect
-import com.example.themovieapp.utils.ViewState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+
+interface ViewState
+interface ViewEvent
+interface ViewSideEffect
 
 const val LAUNCH_LISTEN_FOR_EFFECTS = "launch-listen-for-effects"
 
@@ -56,4 +56,5 @@ abstract class BaseViewModel<Event: ViewEvent, UiState: ViewState, Effect: ViewS
         val effectValue = builder()
         viewModelScope.launch { _effect.send(effectValue) }
     }
+
 }

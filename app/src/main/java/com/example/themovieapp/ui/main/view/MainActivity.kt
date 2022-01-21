@@ -14,14 +14,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.themovieapp.data.model.Movie
 import com.example.themovieapp.ui.main.contracts.HomeScreenContract
+import com.example.themovieapp.ui.main.contracts.MovieDetailsContract
 import com.example.themovieapp.ui.theme.TheMovieAppTheme
 import com.example.themovieapp.ui.main.viewmodel.HomeViewModel
+import com.example.themovieapp.ui.main.viewmodel.MovieDetailsViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import java.net.URLDecoder
+import java.net.URLEncoder
 
 @ExperimentalAnimationApi
 @AndroidEntryPoint
@@ -69,15 +72,24 @@ fun NavigationComponent(navController: NavHostController) {
                 onEventSent = { event -> homeViewModel.setEvent(event) },
                 onNavigationRequested = { navigationEffect ->
                     if (navigationEffect is HomeScreenContract.Effect.Navigation.ToMovieDetails) {
-                        navController.navigate("movieDetails/movie=${navigationEffect.movie}")
+                        val movieString = Gson().toJson(navigationEffect.movie)
+                        navController.navigate("movieDetails/movie=${URLEncoder.encode(movieString, "utf-8")}")
                     }
                 })
         }
         composable("movieDetails/movie={movie}") {
-            val homeViewModel = hiltViewModel<HomeViewModel>()
+            val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>()
             val movieData = it.arguments?.getString("movie")
             val movie = Gson().fromJson(URLDecoder.decode(movieData, "utf-8"), Movie::class.java)
-            MovieDetailScreen(movie, navController, homeViewModel)
+            movieDetailsViewModel.setMovie(movie)
+            MovieDetailScreen(
+                state = movieDetailsViewModel.viewState.value,
+                effectFlow = movieDetailsViewModel.effect,
+                onEventSent = { event -> movieDetailsViewModel.setEvent(event) },
+                onNavigationRequested = { navigationEffect ->
+                    if (navigationEffect is MovieDetailsContract.Effect.Navigation.goBack)
+                        navController.popBackStack()
+                })
         }
     }
 }
