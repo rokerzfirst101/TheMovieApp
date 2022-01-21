@@ -11,7 +11,9 @@ interface ApiService {
     @GET("movie/{category}?api_key=65db5aebb7dc29d77c7b00443904e829&language=en-US")
     suspend fun getMoviesByCategory(
         @Path("category")
-        category: String
+        category: String,
+        @Query("page")
+        page: Int
     ): Response<GetMoviesResponse>
 
     @GET("search/movie?api_key=65db5aebb7dc29d77c7b00443904e829&language=en-US&page=1&include_adult=true")
